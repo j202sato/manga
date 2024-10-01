@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マンガ喫茶料金計算</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 10px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>マンガ喫茶料金計算</h1>
+        <form id="priceForm">
+            <label for="stay_time">滞在時間 (分で入力してください):</label>
+            <input type="number" id="stay_time" required>
+            <br><br>
+            <label for="day_type">平日/休日の選択:</label>
+            <select id="day_type">
+                <option value="0">平日</option>
+                <option value="1">休日</option>
+            </select>
+            <br><br>
+            <button type="button" onclick="calculatePrice()">料金を計算</button>
+        </form>
+
+        <div id="result" class="result" style="display:none;">
+            <p>滞在時間: <span id="display_time"></span> 分</p>
+            <p>料金: <span id="fee"></span> 円</p>
+        </div>
+    </div>
+
+    <script>
+        const weekdayRates = [500, 1200, 1800, 2400, 2900, 3400, 3900, 4200, 4500];
+        const holidayRates = [600, 1300, 1900, 2500, 3100, 3600, 4100, 4400, 4700];
+        const baseRateWeekday = 300;
+        const baseRateHoliday = 400;
+        const additionalRateWeekday = 100;
+        const additionalRateHoliday = 150;
+
+        function calculatePrice() {
+            const stayTime = parseInt(document.getElementById('stay_time').value);
+            const dayType = parseInt(document.getElementById('day_type').value);
+
+            let baseRate, additionalRate, rates;
+
+            // 平日か休日かで料金テーブルを切り替え
+            if (dayType === 0) {
+                baseRate = baseRateWeekday;
+                additionalRate = additionalRateWeekday;
+                rates = weekdayRates;
+            } else {
+                baseRate = baseRateHoliday;
+                additionalRate = additionalRateHoliday;
+                rates = holidayRates;
+            }
+
+            let fee;
+
+            // 3時間以上滞在した場合の定額プラン適用
+            if (stayTime >= 180) {
+                const hours = Math.floor(stayTime / 60);
+                for (let i = 8; i >= 0; i--) {
+                    if (hours >= (i + 1) * 3) {
+                        fee = rates[i];
+                        break;
+                    }
+                }
+            } else {
+                // 最初の30分の料金
+                fee = baseRate;
+
+                // 30分を超える滞在時間に対して10分ごとの追加料金を計算
+                if (stayTime > 30) {
+                    const extraTime = stayTime - 30;
+                    const additionalPeriods = Math.ceil(extraTime / 10);
+                    fee += additionalPeriods * additionalRate;
+                }
+            }
+
+            // 結果をHTMLに表示
+            document.getElementById('display_time').textContent = stayTime;
+            document.getElementById('fee').textContent = fee;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
